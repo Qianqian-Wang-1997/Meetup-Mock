@@ -1,0 +1,102 @@
+buildscript {
+	ext {
+		// this sets the Spring Boot version used by the spring dependency
+		// management plugin
+		springBootVersion = '2.0.5.RELEASE'
+	}
+	repositories {
+		mavenCentral()
+	}
+	dependencies {
+		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+		classpath 'org.junit.platform:junit-platform-gradle-plugin:1.0.0'
+	}
+}
+
+apply plugin: 'java'
+apply plugin: 'eclipse'
+// spring boot plugin, adds the bootRun task (among other things)
+apply plugin: 'org.springframework.boot'
+// spring dependency management (handles loading correct versions
+// for spring dependencies)
+apply plugin: 'io.spring.dependency-management'
+apply plugin: 'org.junit.platform.gradle.plugin'
+//apply plugin: 'jacoco'
+
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = 1.8
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	// spring boot web server
+	compile('org.springframework.boot:spring-boot-starter-web')
+	// thymeleaf templating support for spring boot
+	compile("org.springframework.boot:spring-boot-starter-thymeleaf")
+	// integrates spring boot auth and thymeleaf templating
+	compile ("org.thymeleaf.extras:thymeleaf-extras-springsecurity4")
+	// required for the @@EnableOAuth2Sso annotation
+	// compile ('org.springframework.security.oauth.boot:spring-security-oauth2-autoconfigure:2.0.5.RELEASE')
+	compile ('org.springframework.boot:spring-boot-starter-data-rest')
+	compile ('org.springframework.boot:spring-boot-starter-data-mongodb')
+	compile ('org.springframework.boot:spring-boot-starter-security')
+	compile ('org.springframework.boot:spring-boot-starter-validation')
+	compile ('io.jsonwebtoken:jjwt:0.9.1')
+	compile ('org.projectlombok:lombok')
+	compile ('javax.persistence:persistence-api:1.0.2')
+	compile ('org.slf4j:slf4j-api:1.7.30')
+	compile ('ch.qos.logback:logback-classic:1.2.3')
+	// for spring boot testing
+	testCompile('org.springframework.boot:spring-boot-starter-test')
+	testCompile('org.springframework.security:spring-security-test')
+
+	// JUnit 5
+	testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.2'
+	testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.7.2'
+	testImplementation 'net.bytebuddy:byte-buddy:1.11.22'
+
+	// Mockito
+	testImplementation 'org.mockito:mockito-core:3.12.4'
+	testImplementation 'org.mockito:mockito-junit-jupiter:3.12.4'
+
+	testImplementation 'de.flapdoodle.embed:de.flapdoodle.embed.mongo'
+	testImplementation 'com.github.fakemongo:fongo:2.2.0-RC1'
+
+	implementation 'org.mongodb:mongodb-driver-sync:4.4.2'
+}
+
+test {
+	useJUnitPlatform()
+	testLogging {
+		events "passed", "skipped", "failed"
+	}
+//	finalizedBy jacocoTestReport
+}
+
+//jacoco {
+//	toolVersion = '0.8.7'
+//	reportsDir = file("$buildDir/customJacocoReportDir")
+//}
+
+//jacocoTestReport {
+//	dependsOn junitPlatform
+//	reports {
+//		xml.enabled true
+//		csv.enabled true
+//		html.enabled true
+//		html.destination "${buildDir}/jacocoHtml"
+//		xml.destination "${buildDir}/jacocoXml.xml"
+//		csv.destination "${buildDir}/jacocoCsv.csv"
+//	}
+//}
+
+/*
+	This is required to resolve a logging dependency conflict between the
+	okta-spring-boot-starter and the various spring dependencies.
+ */
+configurations.all {
+	exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+	exclude group: 'org.springframework.boot', module: 'logback-classic'
+}
